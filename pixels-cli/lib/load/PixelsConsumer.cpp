@@ -96,6 +96,8 @@ void PixelsConsumer::run() {
                     std::cout << "got empty line" << std::endl;
                     continue;
                 }
+                std::cout << "Read line: " << line << std::endl;
+                //???????getline??
                 if (initPixelsFile) {
                     LocalFS targetStorage;
                     targetFileName = std::to_string(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) + ".pxl";
@@ -109,14 +111,29 @@ void PixelsConsumer::run() {
                 ++rowCounter;
 
                 std::vector<std::string> colsInLine;
-                boost::sregex_token_iterator it(line.begin(), line.end(), boost::regex(regex), -1);
-                for (; it != boost::sregex_token_iterator(); ++it) {
-                    colsInLine.push_back(*it);
+                if (regex == "null") {
+                    // ?? regex ? "null"??????????
+                    colsInLine.push_back(line);
+                    std::cout << "Regex is 'null', treating entire line as a single column: " << line << std::endl;
+                } else {
+                    // ????????????
+                    boost::sregex_token_iterator it(line.begin(), line.end(), boost::regex(regex), -1);
+                    for (; it != boost::sregex_token_iterator(); ++it) {
+                        colsInLine.push_back(*it);
+                    }
+                    std::cout << "Columns after split: ";
+                    for (const auto& col : colsInLine) {
+                        std::cout << "'" << col << "' ";  // ????
+                    }
+                    std::cout << std::endl;
                 }
                 for(int i = 0; i < columnVectors.size(); ++i) {
                     if (i > colsInLine.size() || colsInLine[i].empty() || colsInLine[i] == "\\N") {
                         columnVectors[i]->addNull();
+                        std::cout<<"ceshi"<<std::endl;
                     } else {
+                        std::cout<<colsInLine[i]<<std::endl;
+                        columnVectors[i]->add(colsInLine[i]);
                         columnVectors[i]->add(colsInLine[i]);
                     }
                 }

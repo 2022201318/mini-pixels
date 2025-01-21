@@ -32,6 +32,9 @@ std::shared_ptr<ColumnWriter> ColumnWriterBuilder::newColumnWriter(std::shared_p
         case TypeDescription::LONG:
 //            return std::dynamic_pointer_cast<ColumnWriter,IntegerColumnWriter>(std::make_shared<IntegerColumnWriter>(type, writerOption));
             return std::make_shared<IntegerColumnWriter>(type, writerOption);
+        case TypeDescription::DATE:
+            std::cout<<"buzhou1"<<std::endl;
+            return std::make_shared<IntegerColumnWriter>(type, writerOption);
         case TypeDescription::BOOLEAN:
             break;
         case TypeDescription::BYTE:

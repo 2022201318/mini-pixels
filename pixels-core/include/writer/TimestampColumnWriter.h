@@ -1,9 +1,9 @@
 #ifndef DUCKDB_TIMESTAMPCOLUMNWRITER_H
 #define DUCKDB_TIMESTAMPCOLUMNWRITER_H
 
-#include "ColumnWriter.h"
+#include "writer/ColumnWriter.h"
 #include "encoding/RunLenIntEncoder.h"
-#include "TimestampColumnVector.h"  // ?? TimestampColumnVector
+#include "vector/TimestampColumnVector.h"  
 
 class TimestampColumnWriter : public ColumnWriter {
 public:

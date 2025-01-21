@@ -4,7 +4,7 @@
 #include "encoding/RunLenIntEncoder.h"
 #include "ColumnWriter.h"
 #include "utils/EncodingUtils.h"
-#include "DecimalColumnVector.h"  // ?? DecimalColumnVector
+#include "vector/DecimalColumnVector.h"  // ?? DecimalColumnVector
 
 class DecimalColumnWriter : public ColumnWriter {
 public:
