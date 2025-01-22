@@ -30,8 +30,10 @@ public:
     // ?????????
     int getPrecision();
     int getScale();
+    void setPrecision(int precision);
 
-    // ????????
+    void setScale(int scale);
+
     void add(std::string &value) override;
     void add(bool value) override;
     void add(int64_t value) override;

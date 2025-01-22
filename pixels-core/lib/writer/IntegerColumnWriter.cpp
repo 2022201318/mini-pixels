@@ -20,6 +20,8 @@
 
 #include "writer/IntegerColumnWriter.h"
 #include "utils/BitUtils.h"
+#include <cstdio>
+#include <unistd.h>
 std::ostream& operator<<(std::ostream& os, const std::_Bit_iterator& it) {
     // Implement how to print the bit iterator here
     return os;
@@ -90,8 +92,8 @@ int IntegerColumnWriter::write(std::shared_ptr<ColumnVector> vector, int size)
          }
      }
             std::cout << "values[0]: " << values[0] << std::endl;
-
-
+    const char* file_path = "/tmp/timestamps.txt";
+    unlink(file_path);
     int curPartLength;         // Size of the partition which belongs to current pixel
     int curPartOffset = 0;     // Starting offset of the partition which belongs to current pixel
     int nextPartLength = size; // Size of the partition which belongs to next pixel

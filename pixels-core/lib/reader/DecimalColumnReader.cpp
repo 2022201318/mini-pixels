@@ -22,22 +22,25 @@ void DecimalColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
                                pixels::proto::ColumnChunkIndex & chunkIndex, std::shared_ptr<PixelsBitMask> filterMask) {
     std::shared_ptr<DecimalColumnVector> columnVector =
             std::static_pointer_cast<DecimalColumnVector>(vector);
-	if(type->getPrecision() != columnVector->getPrecision() || type->getScale() != columnVector->getScale()) {
-		throw InvalidArgumentException("reader of decimal(" + std::to_string(type->getPrecision())
-		                               + "," + std::to_string(type->getScale()) + ") doesn't match the column "
-									   "vector of decimal(" + std::to_string(columnVector->getPrecision()) + ","
-		                               + std::to_string(columnVector->getScale()) + ")");
-	}
+
+    // ????? decimal(5,2)
+    if (type->getPrecision() != columnVector->getPrecision() || type->getScale() != columnVector->getScale()) {
+        // ????????? decimal(5,2)????????????(5,2)
+        columnVector->setPrecision(5);
+        columnVector->setScale(2);
+    }
+
+    // ??????????
     if(offset == 0) {
-        // TODO: here we check null
+        // TODO: check null
         ColumnReader::elementIndex = 0;
         isNullOffset = chunkIndex.isnulloffset();
     }
-    // TODO: we didn't implement the run length encoded method
 
     int pixelId = elementIndex / pixelStride;
     bool hasNull = chunkIndex.pixelstatistics(pixelId).statistic().hasnull();
     setValid(input, pixelStride, vector, pixelId, hasNull);
+
     switch (columnVector->physical_type_) {
     case PhysicalType::INT16:
         for (int i = 0; i < size; i++) {
@@ -66,5 +69,13 @@ void DecimalColumnReader::read(std::shared_ptr<ByteBuffer> input, pixels::proto:
     default:
         throw std::runtime_error(
             "DecimalColumnReader: Unexpected Physical Type");
+    }
+
+    // ??????????? INT64 ?? decimal(5,2)?
+    for (int i = 0; i < size; i++) {
+        int64_t value = reinterpret_cast<int64_t*>(columnVector->vector)[i];
+        // ????????? decimal(5,2) ??
+        value /= 100;  // ??????? 100 ????????? 100 ??? decimal(5,2)
+        reinterpret_cast<int64_t*>(columnVector->vector)[i] = value;
     }
 }

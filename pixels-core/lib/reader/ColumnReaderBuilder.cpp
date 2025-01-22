@@ -19,13 +19,9 @@ std::shared_ptr<ColumnReader> ColumnReaderBuilder::newColumnReader(std::shared_p
 //            break;
 //        case TypeDescription::DOUBLE:
 //            break;
-	    case TypeDescription::DECIMAL: {
-		    if (type->getPrecision() <= TypeDescription::SHORT_DECIMAL_MAX_PRECISION) {
-			    return std::make_shared<DecimalColumnReader>(type);
-		    } else {
-			    throw InvalidArgumentException("Currently we didn't implement LongDecimalColumnVector.");
-		    }
-	    }
+	    case TypeDescription::DECIMAL: 
+			return std::make_shared<DecimalColumnReader>(type);
+
 //        case TypeDescription::STRING:
 //            break;
         case TypeDescription::DATE:

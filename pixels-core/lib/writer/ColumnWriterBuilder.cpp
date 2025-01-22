@@ -31,6 +31,7 @@ std::shared_ptr<ColumnWriter> ColumnWriterBuilder::newColumnWriter(std::shared_p
         case TypeDescription::INT:
         case TypeDescription::LONG:
         case TypeDescription::TIMESTAMP:
+        case TypeDescription::DECIMAL:
 //            return std::dynamic_pointer_cast<ColumnWriter,IntegerColumnWriter>(std::make_shared<IntegerColumnWriter>(type, writerOption));
             return std::make_shared<IntegerColumnWriter>(type, writerOption);
         case TypeDescription::DATE:
