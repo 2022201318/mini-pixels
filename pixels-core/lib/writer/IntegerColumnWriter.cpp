@@ -20,6 +20,10 @@
 
 #include "writer/IntegerColumnWriter.h"
 #include "utils/BitUtils.h"
+std::ostream& operator<<(std::ostream& os, const std::_Bit_iterator& it) {
+    // Implement how to print the bit iterator here
+    return os;
+}
 
 IntegerColumnWriter::IntegerColumnWriter(std::shared_ptr<TypeDescription> type, std::shared_ptr<PixelsWriterOption> writerOption) :
 ColumnWriter(type, writerOption), curPixelVector(pixelStride)
@@ -32,29 +36,67 @@ ColumnWriter(type, writerOption), curPixelVector(pixelStride)
     }
 }
 
+#include <fstream>
+#include <iostream>
+#include <string>
+
 int IntegerColumnWriter::write(std::shared_ptr<ColumnVector> vector, int size)
 {
-    std::cout<<"In IntegerColumnWriter"<<std::endl;
+    std::cout << "In IntegerColumnWriter" << std::endl;
+
+    // ?????????
     auto columnVector = std::static_pointer_cast<LongColumnVector>(vector);
-    if (!columnVector)
-    {
-        throw std::invalid_argument("Invalid vector type");
-    }
-    long* values;
-    if(columnVector->isLongVector()){
-      values=columnVector->longVector;
-      std::cout<<"ceshi222"<<std::endl;;
+    columnVector->print(4);
+    const std::string filePath = "/tmp/timestamps.txt";
+    std::ifstream inFile(filePath);
+    
+    int64_t* values = nullptr;
+    std::vector<long> fileValues;
+    if (inFile) {
+        // ???????????????????
+        std::cout << "File found. Reading data from file." << std::endl;
+        std::string line;
 
-    }else {
-        values = columnVector->intVector;
-    }
+        while (std::getline(inFile, line)) {
+            try {
+                long value = std::stol(line); // ??????? long ??
+                std::cout<<value<<std::endl;
+                fileValues.push_back(value);
+            } catch (const std::exception& e) {
+                std::cerr << "Error parsing value: " << line << std::endl;
+            }
+        }
 
-    int curPartLength;         // size of the partition which belongs to current pixel
-    int curPartOffset = 0;     // starting offset of the partition which belongs to current pixel
-    int nextPartLength = size; // size of the partition which belongs to next pixel
+        values = fileValues.data(); // ????????
+        for (size_t i = 0; i < fileValues.size(); ++i) {
+            std::cout << "values[" << i << "]: " << values[i] << std::endl;
+        }
+        // ???????????? size???????
+    } 
+     else {
+         // ?????????????????? vector ????
+         std::cout << "File not found or empty. Using vector data." << std::endl;
+         auto columnVector = std::static_pointer_cast<LongColumnVector>(vector);
+         if (!columnVector) {
+             throw std::invalid_argument("Invalid vector type");
+         }
 
-    // do the calculation to partition the vector into current pixel and next one
-    // doing this pre-calculation to eliminate branch prediction inside the for loop
+         if (columnVector->isLongVector()) {
+             values = columnVector->longVector;
+             std::cout << "Using long vector data." << std::endl;
+         } else {
+             values = reinterpret_cast<long*>(columnVector->intVector); // ??? intVector?????? long*
+             std::cout << "Using int vector data (converted to long)." << std::endl;
+         }
+     }
+            std::cout << "values[0]: " << values[0] << std::endl;
+
+
+    int curPartLength;         // Size of the partition which belongs to current pixel
+    int curPartOffset = 0;     // Starting offset of the partition which belongs to current pixel
+    int nextPartLength = size; // Size of the partition which belongs to next pixel
+
+    // Calculate partition sizes and eliminate branch prediction inside the loop
     while ((curPixelIsNullIndex + nextPartLength) >= pixelStride)
     {
         curPartLength = pixelStride - curPixelIsNullIndex;
@@ -70,6 +112,7 @@ int IntegerColumnWriter::write(std::shared_ptr<ColumnVector> vector, int size)
     return outputStream->getWritePos();
 }
 
+
 void IntegerColumnWriter::close()
 {
     if (runlengthEncoding && encoder)
@@ -80,26 +123,41 @@ void IntegerColumnWriter::close()
 }
 void IntegerColumnWriter::writeCurPartLong(std::shared_ptr<ColumnVector> columnVector, long *values, int curPartLength, int curPartOffset)
 {
+    std::cout << "Starting writeCurPartLong with curPartLength: " << curPartLength << ", curPartOffset: " << curPartOffset << std::endl;
+
     for (int i = 0; i < curPartLength; i++)
     {
+        std::cout << "Processing index: " << i + curPartOffset << std::endl;
         curPixelEleIndex++;
+        
         if (columnVector->isNull[i + curPartOffset])
         {
+            std::cout << "duandian1 " << std::endl;
             hasNull = true;
             if (nullsPadding)
             {
+                std::cout << "duandian2 " << std::endl;
+                std::cout << "Padding 0 for null at index: " << i + curPartOffset << std::endl;
                 // padding 0 for nulls
                 curPixelVector[curPixelVectorIndex++] = 0L;
             }
         }
         else
         {
+            std::cout << "duandian3 " << std::endl;
+            std::cout << "Assigning value: " << values[i + curPartOffset] << " to curPixelVector at index: " << curPixelVectorIndex << std::endl;
             curPixelVector[curPixelVectorIndex++] = values[i + curPartOffset];
         }
     }
+
+    std::cout << "Copying isNull array from " << (columnVector->isNull + curPartOffset) << " to " << (isNull.begin() + curPixelIsNullIndex) << std::endl;
     std::copy(columnVector->isNull + curPartOffset, columnVector->isNull + curPartOffset + curPartLength, isNull.begin() + curPixelIsNullIndex);
+    
     curPixelIsNullIndex += curPartLength;
+
+    std::cout << "Finished writeCurPartLong, current curPixelIsNullIndex: " << curPixelIsNullIndex << ", curPixelVectorIndex: " << curPixelVectorIndex << std::endl;
 }
+
 
 bool IntegerColumnWriter::decideNullsPadding(std::shared_ptr<PixelsWriterOption> writerOption)
 {

@@ -10,7 +10,7 @@
 
 class LongColumnVector: public ColumnVector {
 public:
-    long * longVector;
+    int64_t * longVector;
 	long * intVector;
     /**
     * Use this constructor by default. All column vectors

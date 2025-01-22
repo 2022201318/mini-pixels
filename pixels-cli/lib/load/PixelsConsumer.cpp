@@ -134,7 +134,10 @@ void PixelsConsumer::run() {
                     } else {
                         std::cout<<colsInLine[i]<<std::endl;
                         columnVectors[i]->add(colsInLine[i]);
-                        columnVectors[i]->add(colsInLine[i]);
+                        if(schemaStr=="date")
+                        {
+                            columnVectors[i]->add(colsInLine[i]);
+                        }
                     }
                 }
 

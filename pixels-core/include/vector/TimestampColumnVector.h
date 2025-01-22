@@ -3,11 +3,17 @@
 
 #include "vector/ColumnVector.h"
 #include "vector/VectorizedRowBatch.h"
-
+#include <stdexcept>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <ctime>
+#include <string>
+#include <algorithm>
 class TimestampColumnVector : public ColumnVector {
 public:
     int precision;
-    long *times; // ??????long?
+    int64_t *times; // ??????long?
 
     /**
      * ?????????????????????
@@ -21,7 +27,7 @@ public:
     void set(int elementNum, long ts);
     void print(int rowCount) override;
     void close() override;
-
+    void *current1();
     // ????????
     void add(std::string &value) override;
     void add(bool value) override;

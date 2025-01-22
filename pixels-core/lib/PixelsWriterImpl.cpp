@@ -75,7 +75,6 @@ void PixelsWriterImpl::writeColumnVectors(std::vector<std::shared_ptr<ColumnVect
     std::vector<std::future<void>> futures;
     std::atomic<int> dataLength(0);
     int commonColumnLength = columnVectors.size() ;
-    columnVectors[0]->print(4);
     // Writing regular columns
     for (int i = 0; i < commonColumnLength; ++i) {
        // dataLength += columnWriters[i]->write(columnVectors[i], rowBatchSize);
